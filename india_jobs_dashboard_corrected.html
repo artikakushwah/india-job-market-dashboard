@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>India Job Market Intelligence — Artika Singh Kushwah</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+:root{--bg:#0a0f1e;--card:#1a2235;--border:#1e3a5f;--accent:#00d4ff;--accent2:#7c3aed;--accent3:#f59e0b;--accent4:#10b981;--accent5:#ec4899;--text:#e2e8f0;--muted:#64748b;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,212,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+nav{background:rgba(10,15,30,0.95);border-bottom:1px solid var(--border);padding:0 32px;position:sticky;top:0;z-index:100;backdrop-filter:blur(10px);}
+.nav-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:60px;}
+.nav-logo{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent);display:flex;align-items:center;gap:8px;}
+.nav-logo::before{content:'◆';}
+.nav-tabs{display:flex;gap:4px;}
+.nav-tab{padding:6px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:var(--muted);border:none;background:transparent;transition:all 0.2s;}
+.nav-tab:hover{color:var(--text);background:rgba(255,255,255,0.05);}
+.nav-tab.active{color:var(--accent);background:rgba(0,212,255,0.1);}
+.page{display:none;padding:32px;max-width:1400px;margin:0 auto;position:relative;z-index:1;}
+.page.active{display:block;}
+.page-header{margin-bottom:32px;}
+.badge{display:inline-flex;align-items:center;gap:6px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.3);color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:11px;padding:4px 12px;border-radius:4px;margin-bottom:12px;letter-spacing:0.05em;}
+.badge::before{content:'●';font-size:8px;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+h1{font-size:clamp(24px,3.5vw,42px);font-weight:700;line-height:1.1;letter-spacing:-0.02em;}
+h1 span{color:var(--accent);}
+.subtitle{color:var(--muted);font-size:14px;margin-top:8px;}
+.note{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:8px;padding:10px 16px;font-size:12px;color:var(--accent3);margin-top:12px;display:inline-block;}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:28px;}
+.kpi-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;transition:all 0.2s;position:relative;overflow:hidden;}
+.kpi-card:hover{transform:translateY(-2px);border-color:var(--accent);box-shadow:0 0 20px rgba(0,212,255,0.1);}
+.kpi-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));opacity:0;transition:opacity 0.2s;}
+.kpi-card:hover::after{opacity:1;}
+.kpi-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;font-family:'JetBrains Mono',monospace;margin-bottom:8px;}
+.kpi-value{font-size:32px;font-weight:700;color:var(--accent);line-height:1;font-family:'JetBrains Mono',monospace;}
+.kpi-sub{font-size:12px;color:var(--muted);margin-top:6px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;}
+.grid-32{display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-bottom:20px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;}
+.card-title{font-size:12px;font-weight:600;color:var(--text);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;}
+.card-sub{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-bottom:20px;}
+.chart-wrap{position:relative;height:280px;}
+.skill-bar-row{display:flex;align-items:center;gap:12px;padding:7px 0;border-bottom:1px solid rgba(30,58,95,0.4);}
+.skill-bar-row:last-child{border-bottom:none;}
+.skill-name{font-size:12px;width:130px;flex-shrink:0;font-family:'JetBrains Mono',monospace;color:var(--text);}
+.skill-bar-wrap{flex:1;height:6px;background:rgba(30,58,95,0.8);border-radius:3px;overflow:hidden;}
+.skill-bar{height:100%;border-radius:3px;}
+.skill-count{font-size:12px;color:var(--accent);width:30px;text-align:right;font-family:'JetBrains Mono',monospace;}
+.company-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(30,58,95,0.4);}
+.company-row:last-child{border-bottom:none;}
+.company-rank{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);width:18px;text-align:right;}
+.company-name{flex:1;font-size:12px;font-weight:500;}
+.company-bar-wrap{width:80px;height:4px;background:rgba(30,58,95,0.8);border-radius:2px;overflow:hidden;}
+.company-bar{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));}
+.company-count{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);width:25px;text-align:right;}
+.insight-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-bottom:28px;}
+.insight-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;display:flex;gap:14px;}
+.insight-icon{font-size:22px;flex-shrink:0;}
+.insight-title{font-size:12px;font-weight:600;color:var(--accent);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em;}
+.insight-text{font-size:12px;color:var(--muted);line-height:1.5;}
+.predictor-wrap{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;}
+.form-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:28px;}
+.form-title{font-size:18px;font-weight:700;margin-bottom:6px;}
+.form-sub{font-size:12px;color:var(--muted);margin-bottom:24px;font-family:'JetBrains Mono',monospace;}
+.form-group{margin-bottom:18px;}
+.form-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;display:block;font-family:'JetBrains Mono',monospace;}
+select{width:100%;background:rgba(10,15,30,0.8);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:13px;outline:none;}
+select:focus{border-color:var(--accent);}
+select option{background:#1a2235;}
+.skills-check{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;}
+.check-item{display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 10px;border-radius:6px;border:1px solid var(--border);transition:all 0.2s;font-size:12px;}
+.check-item:hover{border-color:var(--accent);background:rgba(0,212,255,0.05);}
+.check-item.selected{border-color:var(--accent);background:rgba(0,212,255,0.1);color:var(--accent);}
+.check-dot{width:8px;height:8px;border-radius:50%;border:1px solid var(--muted);transition:all 0.2s;flex-shrink:0;}
+.check-item.selected .check-dot{background:var(--accent);border-color:var(--accent);}
+.predict-btn{width:100%;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:8px;padding:14px;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;color:#fff;cursor:pointer;margin-top:8px;}
+.predict-btn:hover{opacity:0.85;}
+.result-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:28px;display:flex;flex-direction:column;gap:20px;}
+.result-placeholder{text-align:center;padding:40px 20px;color:var(--muted);}
+.result-placeholder .big-icon{font-size:48px;margin-bottom:12px;}
+.result-main{display:none;}
+.salary-display{text-align:center;padding:24px;background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.2);border-radius:10px;}
+.salary-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;font-family:'JetBrains Mono',monospace;margin-bottom:8px;}
+.salary-range{font-size:36px;font-weight:700;color:var(--accent);font-family:'JetBrains Mono',monospace;line-height:1;}
+.salary-avg{font-size:13px;color:var(--muted);margin-top:6px;}
+.factors-list{display:flex;flex-direction:column;gap:10px;}
+.factor-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:8px 12px;background:rgba(10,15,30,0.5);border-radius:6px;}
+.factor-label{color:var(--muted);}
+.factor-value{font-weight:600;font-family:'JetBrains Mono',monospace;}
+.factor-value.up{color:var(--accent4);}
+.market-insight{background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.3);border-radius:8px;padding:14px;font-size:12px;color:var(--text);line-height:1.6;}
+.market-insight strong{color:var(--accent2);}
+.disclaimer{background:rgba(100,116,139,0.08);border:1px solid rgba(100,116,139,0.25);border-radius:8px;padding:12px 16px;font-size:11px;color:var(--muted);margin-top:16px;line-height:1.5;}
+.gap-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+.gap-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;}
+.gap-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:16px;}
+.gap-title.hot{color:var(--accent4);}
+.gap-title.cold{color:var(--accent5);}
+.gap-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(30,58,95,0.4);font-size:12px;}
+.gap-item:last-child{border-bottom:none;}
+.gap-skill{font-family:'JetBrains Mono',monospace;}
+.gap-pill{padding:2px 10px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:0.05em;}
+.gap-pill.high{background:rgba(16,185,129,0.15);color:var(--accent4);border:1px solid rgba(16,185,129,0.3);}
+.gap-pill.low{background:rgba(236,72,153,0.15);color:var(--accent5);border:1px solid rgba(236,72,153,0.3);}
+footer{border-top:1px solid var(--border);padding:24px 32px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:20px;}
+footer span{color:var(--accent);}
+@media(max-width:900px){.grid-2,.grid-32,.predictor-wrap,.gap-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo">India Job Market Intelligence</div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="showPage('overview')">Overview</button>
+      <button class="nav-tab" onclick="showPage('analysis')">Deep Analysis</button>
+      <button class="nav-tab" onclick="showPage('predictor')">Salary Predictor</button>
+      <button class="nav-tab" onclick="showPage('skillgap')">Skill Gap</button>
+    </div>
+  </div>
+</nav>
+
+<!-- OVERVIEW -->
+<div class="page active" id="page-overview">
+  <div class="page-header">
+    <div class="badge">REAL DATA · JUNE 2026</div>
+    <h1>India <span>Job Market</span> Intelligence</h1>
+    <p class="subtitle">Analysis of 1,000 job listings collected via Adzuna API · Built by Artika Singh Kushwah</p>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">Total Jobs</div><div class="kpi-value">1,000</div><div class="kpi-sub">Listings analyzed</div></div>
+    <div class="kpi-card"><div class="kpi-label">Top City</div><div class="kpi-value" style="font-size:20px;padding-top:6px">Bangalore</div><div class="kpi-sub">241 jobs · 24.1%</div></div>
+    <div class="kpi-card"><div class="kpi-label">Top Sector</div><div class="kpi-value" style="font-size:18px;padding-top:8px">IT Jobs</div><div class="kpi-sub">393 listings · 39.3%</div></div>
+    <div class="kpi-card"><div class="kpi-label">Top Hirer</div><div class="kpi-value" style="font-size:18px;padding-top:8px">TCS</div><div class="kpi-sub">58 open roles</div></div>
+    <div class="kpi-card"><div class="kpi-label">Top Skill</div><div class="kpi-value" style="font-size:18px;padding-top:8px">Cloud</div><div class="kpi-sub">50 job descriptions</div></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Jobs by Sector</div>
+      <div class="card-sub">Top 8 categories · out of 1,000 listings</div>
+      <div class="chart-wrap"><canvas id="catChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Jobs by City</div>
+      <div class="card-sub">Bar chart used for accurate comparison of close values</div>
+      <div class="chart-wrap"><canvas id="cityChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid-32">
+    <div class="card">
+      <div class="card-title">Hiring Volume by Month</div>
+      <div class="card-sub">Real posting dates from dataset · Apr 2025 – Jun 2026</div>
+      <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+      <div class="disclaimer">📌 Note: This reflects the posting dates present in this 1,000-job snapshot pulled on 16 June 2026, not a continuously tracked daily feed. The sharp rise in May–June 2026 likely reflects how Adzuna's API surfaces recently active listings first.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Top Hiring Companies</div>
+      <div class="card-sub">By open roles</div>
+      <div class="company-list" id="companyList"></div>
+    </div>
+  </div>
+
+  <div class="insight-grid">
+    <div class="insight-card"><div class="insight-icon">🏙️</div><div><div class="insight-title">Bangalore Dominates</div><div class="insight-text">241 jobs (24.1%) are in Bangalore — India's undisputed tech hub, well ahead of Mumbai (151) and Hyderabad (102).</div></div></div>
+    <div class="insight-card"><div class="insight-icon">💻</div><div><div class="insight-title">IT Rules at 39%</div><div class="insight-text">IT Jobs account for 393 listings. Finance (10.3%) and Sales (9.5%) are distant runners-up.</div></div></div>
+    <div class="insight-card"><div class="insight-icon">📈</div><div><div class="insight-title">Experience Is Rewarded</div><div class="insight-text">Only 28 Junior-labeled roles vs 220 Manager/Executive roles — India's listed market skews toward experienced hires.</div></div></div>
+    <div class="insight-card"><div class="insight-icon">☁️</div><div><div class="insight-title">Cloud Leads Skills</div><div class="insight-text">"Cloud" appears in 50 descriptions, SAP in 45, Excel in 34 — enterprise & cloud skills dominate over niche tools.</div></div></div>
+    <div class="insight-card"><div class="insight-icon">🏢</div><div><div class="insight-title">TCS Leads by 3.4x</div><div class="insight-text">TCS has 58 open roles — 3.4x more than 2nd place Turing (17). Large IT services firms post the most volume.</div></div></div>
+    <div class="insight-card"><div class="insight-icon">🌐</div><div><div class="insight-title">Remote Listings Exist</div><div class="insight-text">199 listings are tagged Pan-India/Remote rather than a specific city — showing some location flexibility in hiring.</div></div></div>
+  </div>
+</div>
+
+<!-- ANALYSIS -->
+<div class="page" id="page-analysis">
+  <div class="page-header">
+    <div class="badge">DEEP ANALYSIS</div>
+    <h1>Market <span>Breakdown</span></h1>
+    <p class="subtitle">Experience levels and skill demand from the same 1,000-job dataset</p>
+    <div class="note">⚠️ Salary figures in this section (and the Predictor tab) are estimated from general market research, not from Adzuna data — the India API did not return salary fields for this pull.</div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Experience Level Distribution</div>
+      <div class="card-sub">Inferred from keywords in 1,000 job titles</div>
+      <div class="chart-wrap"><canvas id="levelChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Estimated Salary by Experience (LPA)</div>
+      <div class="card-sub">⚠️ Market-research estimate, not from this dataset</div>
+      <div class="chart-wrap"><canvas id="salaryLevelChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-title">Skills in Demand — Frequency in Job Descriptions</div>
+    <div class="card-sub">Real keyword count from 1,000 job descriptions (not job titles)</div>
+    <div id="skillBars" style="margin-top:8px"></div>
+  </div>
+</div>
+
+<!-- PREDICTOR -->
+<div class="page" id="page-predictor">
+  <div class="page-header">
+    <div class="badge">ESTIMATION TOOL</div>
+    <h1>Salary <span>Estimator</span></h1>
+    <p class="subtitle">A rule-based estimate using market-research multipliers — not a trained ML model on real salary data</p>
+  </div>
+
+  <div class="predictor-wrap">
+    <div class="form-card">
+      <div class="form-title">Your Profile</div>
+      <div class="form-sub">Fill in your details to get an estimate</div>
+
+      <div class="form-group">
+        <label class="form-label">Experience Level</label>
+        <select id="inp-level">
+          <option value="Junior">Junior / Fresher (0–2 yrs)</option>
+          <option value="Mid Level" selected>Mid Level (3–6 yrs)</option>
+          <option value="Senior">Senior (7–12 yrs)</option>
+          <option value="Manager/Executive">Manager / Executive (12+ yrs)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Target City</label>
+        <select id="inp-city">
+          <option value="Bangalore">Bangalore</option>
+          <option value="Mumbai">Mumbai</option>
+          <option value="Delhi NCR">Delhi NCR</option>
+          <option value="Hyderabad">Hyderabad</option>
+          <option value="Chennai">Chennai</option>
+          <option value="Pune">Pune</option>
+          <option value="Ahmedabad">Ahmedabad</option>
+          <option value="Other">Other / Tier 2</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Sector</label>
+        <select id="inp-sector">
+          <option value="IT">IT / Tech</option>
+          <option value="Finance">Finance / Accounting</option>
+          <option value="Sales">Sales</option>
+          <option value="Marketing">Marketing</option>
+          <option value="Engineering">Engineering</option>
+          <option value="Design">Design / Creative</option>
+          <option value="Education">Education</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Your Skills (select all that apply)</label>
+        <div class="skills-check" id="skillsCheck"></div>
+      </div>
+
+      <button class="predict-btn" onclick="predictSalary()">⚡ Estimate My Salary</button>
+      <div class="disclaimer">This estimate is built from a weighted formula (level × city × sector × skill multipliers based on general market research) — it is not predicted from this project's job dataset, which has no salary fields.</div>
+    </div>
+
+    <div class="result-card">
+      <div class="result-placeholder" id="resultPlaceholder">
+        <div class="big-icon">💼</div>
+        <p>Fill in your profile and click Estimate to see a salary range</p>
+      </div>
+      <div class="result-main" id="resultMain">
+        <div class="salary-display">
+          <div class="salary-label">Estimated Salary Range</div>
+          <div class="salary-range" id="salaryRange">—</div>
+          <div class="salary-avg" id="salaryAvg"></div>
+        </div>
+        <div class="factors-list" id="factorsList"></div>
+        <div class="market-insight" id="marketInsight"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SKILL GAP -->
+<div class="page" id="page-skillgap">
+  <div class="page-header">
+    <div class="badge">SKILL GAP ANALYSIS</div>
+    <h1>What <span>Skills</span> to Learn?</h1>
+    <p class="subtitle">Based on real keyword frequency in 1,000 job descriptions</p>
+  </div>
+
+  <div class="gap-grid">
+    <div class="gap-card">
+      <div class="gap-title hot">🔥 High Frequency Skills</div>
+      <div class="gap-item"><span class="gap-skill">Cloud (AWS/Azure/GCP)</span><span class="gap-pill high">50 jobs</span></div>
+      <div class="gap-item"><span class="gap-skill">SAP</span><span class="gap-pill high">45 jobs</span></div>
+      <div class="gap-item"><span class="gap-skill">Communication</span><span class="gap-pill high">35 jobs</span></div>
+      <div class="gap-item"><span class="gap-skill">Excel</span><span class="gap-pill high">34 jobs</span></div>
+      <div class="gap-item"><span class="gap-skill">Leadership</span><span class="gap-pill high">25 jobs</span></div>
+      <div class="gap-item"><span class="gap-skill">SQL</span><span class="gap-pill high">17 jobs</span></div>
+      <div class="gap-item"><span class="gap-skill">Azure</span><span class="gap-pill high">13 jobs</span></div>
+      <div class="gap-item"><span class="gap-skill">AWS</span><span class="gap-pill high">11 jobs</span></div>
+    </div>
+    <div class="gap-card">
+      <div class="gap-title cold">📉 Low Frequency Skills (Possible Gap)</div>
+      <div class="gap-item"><span class="gap-skill">Power BI</span><span class="gap-pill low">1 job</span></div>
+      <div class="gap-item"><span class="gap-skill">Tableau</span><span class="gap-pill low">1 job</span></div>
+      <div class="gap-item"><span class="gap-skill">Agile</span><span class="gap-pill low">1 job</span></div>
+      <div class="gap-item"><span class="gap-skill">TensorFlow</span><span class="gap-pill low">1 job</span></div>
+      <div class="gap-item"><span class="gap-skill">Node.js</span><span class="gap-pill low">1 job</span></div>
+      <div class="gap-item"><span class="gap-skill">Docker</span><span class="gap-pill low">2 jobs</span></div>
+      <div class="gap-item"><span class="gap-skill">React</span><span class="gap-pill low">2 jobs</span></div>
+      <div class="gap-item"><span class="gap-skill">Hadoop</span><span class="gap-pill low">2 jobs</span></div>
+    </div>
+  </div>
+
+  <div class="disclaimer" style="margin-bottom:20px">📌 "Low frequency" means the exact keyword rarely appears in raw job description text — it does not necessarily mean low real-world demand. Many listings may require these tools without naming them explicitly (e.g. a "data visualization" requirement without saying "Power BI").</div>
+
+  <div class="insight-grid">
+    <div class="insight-card"><div class="insight-icon">☁️</div><div><div class="insight-title">Cloud Mentioned Most</div><div class="insight-text">Cloud appears in 50 of 1,000 descriptions — the most-mentioned technical keyword in this dataset. AWS + Azure together account for 24 mentions.</div></div></div>
+    <div class="insight-card"><div class="insight-icon">📊</div><div><div class="insight-title">BI Tools Rarely Named</div><div class="insight-text">Power BI and Tableau are each named in only 1 listing. This could mean low explicit demand, or that visualization needs are bundled under broader terms.</div></div></div>
+    <div class="insight-card"><div class="insight-icon">🗣️</div><div><div class="insight-title">Soft Skills Mentioned Often</div><div class="insight-text">Communication (35) and Leadership (25) are mentioned more than Python (10) or SQL (17) — suggesting many roles value soft skills alongside technical ones.</div></div></div>
+    <div class="insight-card"><div class="insight-icon">🤖</div><div><div class="insight-title">ML Still Niche Here</div><div class="insight-text">Machine Learning is mentioned in only 8 descriptions out of 1,000 — this dataset is dominated by traditional IT/enterprise roles, not ML-specialist roles.</div></div></div>
+  </div>
+</div>
+
+<footer>Built by <span>Artika Singh Kushwah</span> · Data: Adzuna API (real) · Salary figures: market-research estimates (not from this dataset) · 1,000 India job listings pulled 16 June 2026</footer>
+
+<script>
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+Chart.defaults.color = '#64748b';
+Chart.defaults.font.family = "'Space Grotesk', sans-serif";
+const a = '#00d4ff', a2 = '#7c3aed', a3 = '#f59e0b', a4 = '#10b981', a5 = '#ec4899';
+
+new Chart(document.getElementById('catChart'), {
+  type: 'bar',
+  data: {
+    labels: ['IT Jobs','Finance','Sales','Marketing','Engineering','Design','Education','Admin'],
+    datasets: [{ data: [393,103,95,73,64,46,44,23],
+      backgroundColor: [a,a2,a3,a4,a5,'rgba(0,212,255,0.5)','rgba(124,58,237,0.5)','rgba(245,158,11,0.5)'],
+      borderRadius: 6, borderColor: 'transparent' }]
+  },
+  options: { indexAxis:'y', responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{x:{grid:{color:'rgba(30,58,95,0.4)'},border:{color:'transparent'}},
+            y:{grid:{display:false},border:{color:'transparent'},ticks:{font:{size:11}}}} }
+});
+
+// City - BAR CHART now (fixed from donut)
+new Chart(document.getElementById('cityChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Bangalore','Pan-India/Remote','Mumbai','Other','Hyderabad','Delhi NCR','Chennai','Ahmedabad'],
+    datasets: [{ data: [241,199,151,128,102,88,65,25],
+      backgroundColor: [a,a2,a3,'#1e3a5f',a4,a5,'#f97316','rgba(0,212,255,0.4)'],
+      borderRadius: 6, borderColor: 'transparent' }]
+  },
+  options: { responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{x:{grid:{display:false},border:{color:'transparent'},ticks:{font:{size:10}}},
+            y:{grid:{color:'rgba(30,58,95,0.4)'},border:{color:'transparent'}}} }
+});
+
+// Trend - honest monthly, labeled clearly
+new Chart(document.getElementById('trendChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Apr\'25','Jun\'25','Jul\'25','Sep\'25','Nov\'25','Dec\'25','Jan\'26','Feb\'26','Mar\'26','Apr\'26','May\'26','Jun\'26'],
+    datasets: [{ label:'Jobs (by posting month)', data: [1,1,5,2,1,2,2,7,12,40,304,623],
+      backgroundColor: 'rgba(0,212,255,0.6)', borderRadius:4 }]
+  },
+  options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+    scales:{x:{grid:{display:false},border:{color:'transparent'},ticks:{font:{size:9}}},
+            y:{grid:{color:'rgba(30,58,95,0.4)'},border:{color:'transparent'}}} }
+});
+
+const companies = [
+  ['Tata Consultancy Services', 58, 100], ['Turing', 17, 29], ['HCLTech', 15, 26],
+  ['Persistent Systems', 11, 19], ['LTM', 10, 17], ['Livspace', 9, 15],
+  ['ACL Digital', 7, 12], ['Deloitte', 7, 12]
+];
+const cl = document.getElementById('companyList');
+companies.forEach(([name, count, pct], i) => {
+  cl.innerHTML += `<div class="company-row">
+    <span class="company-rank">${String(i+1).padStart(2,'0')}</span>
+    <span class="company-name">${name}</span>
+    <div class="company-bar-wrap"><div class="company-bar" style="width:${pct}%"></div></div>
+    <span class="company-count">${count}</span>
+  </div>`;
+});
+
+new Chart(document.getElementById('levelChart'), {
+  type: 'pie',
+  data: {
+    labels: ['Mid Level (562)','Manager/Exec (220)','Senior (190)','Junior (28)'],
+    datasets: [{ data: [562,220,190,28],
+      backgroundColor: [a, a2, a3, a4], borderColor:'#1a2235', borderWidth:3 }]
+  },
+  options: { responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom',labels:{boxWidth:12,padding:12,font:{size:11}}}} }
+});
+
+new Chart(document.getElementById('salaryLevelChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Junior','Mid Level','Senior','Manager/Exec'],
+    datasets: [{ label:'Avg LPA (₹) — estimate', data: [4.5,11.1,21.6,34.0],
+      backgroundColor: [a4,a,a2,a3], borderRadius:8, borderColor:'transparent' }]
+  },
+  options: { responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{x:{grid:{display:false},border:{color:'transparent'}},
+            y:{grid:{color:'rgba(30,58,95,0.4)'},border:{color:'transparent'},
+               ticks:{callback:v=>'₹'+v+'L'}}} }
+});
+
+const skills = [
+  ['Cloud',50,a],['SAP',45,a2],['Communication',35,a3],['Excel',34,a4],
+  ['Leadership',25,a5],['SQL',17,a],['Azure',13,a2],['AWS',11,a3],
+  ['Python',10,a4],['Spark',10,a5],['Java',8,a],['Machine Learning',8,a2]
+];
+const sb = document.getElementById('skillBars');
+skills.forEach(([name,count,color]) => {
+  sb.innerHTML += `<div class="skill-bar-row">
+    <span class="skill-name">${name}</span>
+    <div class="skill-bar-wrap"><div class="skill-bar" style="width:${(count/50*100)}%;background:${color}"></div></div>
+    <span class="skill-count">${count}</span>
+  </div>`;
+});
+
+const skillsList = ['Python','SQL','Excel','Cloud','SAP','Azure','AWS','Leadership','Communication','Machine Learning','Java','Spark'];
+const sc = document.getElementById('skillsCheck');
+skillsList.forEach(skill => {
+  sc.innerHTML += `<div class="check-item" onclick="toggleSkill(this)">
+    <input type="checkbox" value="${skill}">
+    <div class="check-dot"></div>
+    <span>${skill}</span>
+  </div>`;
+});
+
+function toggleSkill(el) {
+  el.classList.toggle('selected');
+  el.querySelector('input').checked = el.classList.contains('selected');
+}
+
+function predictSalary() {
+  const level = document.getElementById('inp-level').value;
+  const city = document.getElementById('inp-city').value;
+  const sector = document.getElementById('inp-sector').value;
+  const selectedSkills = [...document.querySelectorAll('#skillsCheck .check-item.selected')].map(el => el.querySelector('span').textContent);
+
+  const baseMap = { 'Junior':[3,6], 'Mid Level':[8,16], 'Senior':[16,30], 'Manager/Executive':[28,55] };
+  let [lo, hi] = baseMap[level];
+
+  const cityMult = { 'Bangalore':1.15,'Mumbai':1.08,'Delhi NCR':1.05,'Hyderabad':0.95,'Pune':0.9,'Chennai':0.9,'Ahmedabad':0.85,'Other':0.8 };
+  const cm = cityMult[city] || 0.85;
+  lo = lo * cm; hi = hi * cm;
+
+  const sectorMult = { 'IT':1.1,'Finance':1.12,'Marketing':1.05,'Sales':1.0,'Engineering':1.0,'Design':0.95,'Education':0.85,'Other':0.9 };
+  const sm = sectorMult[sector] || 1.0;
+  lo = lo * sm; hi = hi * sm;
+
+  const premiumSkills = {'Cloud':0.08,'AWS':0.07,'Azure':0.07,'Python':0.06,'Machine Learning':0.1,'SAP':0.06,'SQL':0.04};
+  let skillBonus = 0;
+  selectedSkills.forEach(s => { if(premiumSkills[s]) skillBonus += premiumSkills[s]; });
+  skillBonus = Math.min(skillBonus, 0.3);
+  lo = lo * (1 + skillBonus); hi = hi * (1 + skillBonus);
+
+  lo = Math.round(lo * 10) / 10;
+  hi = Math.round(hi * 10) / 10;
+  const avg = Math.round((lo + hi) / 2 * 10) / 10;
+
+  document.getElementById('resultPlaceholder').style.display = 'none';
+  document.getElementById('resultMain').style.display = 'flex';
+  document.getElementById('salaryRange').textContent = `₹${lo}L – ₹${hi}L`;
+  document.getElementById('salaryAvg').textContent = `Average: ₹${avg} Lakhs Per Annum (estimate)`;
+
+  const cityLabel = city === 'Bangalore' ? 'Highest multiplier city' : city === 'Mumbai' ? 'High cost, high pay' : 'Moderate market';
+  const skillLabel = skillBonus > 0.15 ? `+${Math.round(skillBonus*100)}% (multiple premium skills)` : skillBonus > 0 ? `+${Math.round(skillBonus*100)}%` : 'No premium skills selected';
+
+  document.getElementById('factorsList').innerHTML = `
+    <div class="factor-row"><span class="factor-label">Experience Level</span><span class="factor-value">${level}</span></div>
+    <div class="factor-row"><span class="factor-label">City</span><span class="factor-value ${cm>=1.1?'up':''}">${city} · ${cityLabel}</span></div>
+    <div class="factor-row"><span class="factor-label">Sector</span><span class="factor-value ${sm>=1.1?'up':''}">${sector} · ${Math.round(sm*100-100)>=0?'+':''}${Math.round(sm*100-100)}% vs base</span></div>
+    <div class="factor-row"><span class="factor-label">Skill Premium</span><span class="factor-value ${skillBonus>0?'up':''}">${skillLabel}</span></div>
+  `;
+
+  document.getElementById('marketInsight').innerHTML = `<strong>💡 Note:</strong> This is a weighted estimate based on general India salary benchmarks, not a prediction trained on this project's job data (which has no salary field). Treat it as a directional guide, not a precise figure.`;
+}
+</script>
+</body>
+</html>
